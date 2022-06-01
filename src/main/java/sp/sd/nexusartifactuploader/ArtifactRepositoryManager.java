@@ -1,28 +1,37 @@
 package sp.sd.nexusartifactuploader;
 
-import hudson.model.TaskListener;
-import org.apache.maven.repository.internal.*;
+import java.io.File;
+
+import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
+import org.apache.maven.repository.internal.DefaultVersionRangeResolver;
+import org.apache.maven.repository.internal.DefaultVersionResolver;
+import org.apache.maven.repository.internal.MavenRepositorySystemSession;
+import org.apache.maven.repository.internal.SnapshotMetadataGeneratorFactory;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.building.DefaultSettingsBuilderFactory;
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuildingException;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
-import org.sonatype.aether.*;
+import org.sonatype.aether.RepositorySystem;
+import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.connector.file.FileRepositoryConnectorFactory;
 import org.sonatype.aether.connector.wagon.WagonProvider;
 import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.deployment.DeployRequest;
+import org.sonatype.aether.deployment.DeploymentException;
 import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.MetadataGeneratorFactory;
 import org.sonatype.aether.impl.VersionRangeResolver;
 import org.sonatype.aether.impl.VersionResolver;
 import org.sonatype.aether.impl.internal.DefaultServiceLocator;
-import org.sonatype.aether.repository.*;
+import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.LocalRepositoryManager;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
 
-import java.io.File;
+import hudson.model.TaskListener;
 
 public class ArtifactRepositoryManager {
 
@@ -53,7 +62,7 @@ public class ArtifactRepositoryManager {
     }
 
     public void upload(Artifact... artifacts)
-            throws Exception {
+            throws DeploymentException, SettingsBuildingException {
         RemoteRepository remoteRepository = makeRemoteRepository();
         DeployRequest deployRequest = new DeployRequest();
         for (Artifact artifact : artifacts) {

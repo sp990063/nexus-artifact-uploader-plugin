@@ -1,12 +1,15 @@
 package sp.sd.nexusartifactuploader;
 
-import com.google.common.base.Strings;
-import hudson.model.TaskListener;
+import java.io.File;
+
+import org.apache.maven.settings.building.SettingsBuildingException;
 import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.deployment.DeploymentException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 
-import java.io.File;
-import java.io.IOException;
+import com.google.common.base.Strings;
+
+import hudson.model.TaskListener;
 
 
 /**
@@ -24,7 +27,7 @@ public final class Utils {
     public static Boolean uploadArtifacts(TaskListener Listener, String ResolvedNexusUser,
                                          String ResolvedNexusPassword, String ResolvedNexusUrl,
                                          String ResolvedRepository, String ResolvedProtocol,
-                                         String ResolvedNexusVersion, Artifact... artifacts) throws IOException {
+                                         String ResolvedNexusVersion, Artifact... artifacts) throws InterruptedException {
         Boolean result = false;
         if (Strings.isNullOrEmpty(ResolvedNexusUrl)) {
             Listener.getLogger().println("Url of the Nexus is empty. Please enter Nexus Url.");
@@ -55,9 +58,12 @@ public final class Utils {
                 Listener.getLogger().println("Uploading artifact " + artifact.getFile().getName() + " completed.");
             }
             result = true;
-        } catch (Exception e) {
+        } catch (DeploymentException e) {
             Listener.getLogger().println(e.getMessage());
-            throw new IOException(e.getMessage());
+            throw new InterruptedException(e.getMessage());
+        } catch (SettingsBuildingException e) {
+            Listener.getLogger().println(e.getMessage());
+            throw new InterruptedException(e.getMessage());
         }
         return result;
     }

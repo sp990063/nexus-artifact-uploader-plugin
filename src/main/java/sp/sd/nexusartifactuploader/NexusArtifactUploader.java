@@ -157,18 +157,18 @@ public class NexusArtifactUploader extends Builder implements SimpleBuildStep, S
             artifactToFile.put(artifact.expandVars(envVars), new File(artifactFilePath.getRemote()));
         }
 
-        workspace.act(new Callable<Boolean, IOException>() {
+        workspace.act(new Callable<Boolean, InterruptedException>() {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public Boolean call() throws IOException {
+            public Boolean call() throws InterruptedException {
                 final List<org.sonatype.aether.artifact.Artifact> nexusArtifacts = new ArrayList<>(artifactToFile.size());
                 for (final Map.Entry<Artifact, File> entry : artifactToFile.entrySet()) {
                     Artifact artifact = entry.getKey();
                     File file = entry.getValue();
                     if (!file.exists()) {
                         listener.getLogger().println(file.getName() + " file doesn't exist");
-                        throw new IOException(file.getName() + " file doesn't exist");
+                        throw new InterruptedException(file.getName() + " file doesn't exist");
                     } else {
                         nexusArtifacts.add(Utils.toArtifact(artifact, expandedGroupId, expandedVersion, file));
                     }
